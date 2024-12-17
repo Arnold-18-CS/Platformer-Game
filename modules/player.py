@@ -1,5 +1,4 @@
 import pygame
-from modules.utils import load_sprite_sheets
 from modules.constants import JUMP_VEL, GRAVITY
 from modules.asset_manager import AssetManager
 
