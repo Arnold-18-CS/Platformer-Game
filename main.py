@@ -1,10 +1,6 @@
 import pygame
-from modules.player import Player
-from modules.fire import Fire
-from modules.terrain import create_random_terrain, create_random_target_block
-from modules.utils import get_background
-from modules.collision import handle_move, check_congratulation_collision
 from modules.constants import *
+
 
 pygame.init()
 pygame.display.set_caption(GAME_NAME)
@@ -16,7 +12,6 @@ from modules.fire import Fire
 from modules.terrain import create_random_terrain, create_random_target_block
 from modules.utils import get_background
 from modules.collision import handle_move, check_congratulation_collision
-from modules.constants import *
 
 def draw(window, background, bg_image, player, objects, offset_x):
     for tile in background:
@@ -32,6 +27,9 @@ def draw(window, background, bg_image, player, objects, offset_x):
 # Initialize the game
 def main(window):
     clock = pygame.time.Clock()
+    FPS = 60
+
+    # Load background
     background, bg_image = get_background("Blue.png")
     block_size = 96
 
@@ -46,46 +44,75 @@ def main(window):
     objects = create_random_terrain(block_size, WIDTH, HEIGHT)
     objects.append(fire)
 
-    # Create target block
+    # Create target block safely
+    target_block = None
     try:
         target_block = create_random_target_block(block_size, WIDTH, HEIGHT, player.rect.topleft, objects)
-        objects.append(target_block)  # Add it to the list of game objects
+        objects.append(target_block)
     except ValueError as e:
-        print(e)
+        print(f"Error creating target block: {e}")
 
     offset_x = 0
     scroll_area_width = 200
 
+    # Main loop
     run = True
     while run:
-        clock.tick(FPS)
+        clock.tick(FPS)  # Cap the frame rate
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                break
+        # --- Event Handling ---
+        run = handle_events(player)
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and player.jump_count < 2:
-                    player.jump()
-
+        # --- Update Logic ---
         player.loop(FPS)
         fire.loop()
         handle_move(player, objects)
 
         # Check for target block collision
-        if check_congratulation_collision(player, target_block):
+        if target_block and check_congratulation_collision(player, target_block):
             display_congratulations(window)
 
-        draw(window, background, bg_image, player, objects, offset_x)
+        # --- Camera Logic ---
+        offset_x = handle_scrolling(player)
 
-        if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
-                (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
-            offset_x += player.x_vel
+        # --- Draw Everything ---
+        draw_frame(window, background, bg_image, player, objects, offset_x)
 
+    # Clean up
     pygame.quit()
-    quit()
-    
+
+
+# Event handling
+def handle_events(player):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and player.jump_count < 2:
+                player.jump()
+    return True
+
+
+# Handle camera scrolling
+def handle_scrolling(player):
+    # if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or \
+    #    ((player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
+    #     offset_x += player.x_vel
+        
+    """
+    Calculate offset to center the camera on the player.
+    """
+    offset_x = player.rect.centerx - WIDTH // 2
+    return offset_x
+
+
+# Draw all game elements
+def draw_frame(window, background, bg_image, player, objects, offset_x):
+    """Draw all game elements"""
+    window.fill((0, 0, 0))  # Clear the screen
+    draw(window, background, bg_image, player, objects, offset_x)  # Player is drawn here
+    pygame.display.update()
+  
 def display_congratulations(window):
     """Show the congratulatory message and reload the game after 3 seconds"""
     font = pygame.font.SysFont('Serif', 50)

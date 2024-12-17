@@ -6,7 +6,7 @@ from modules.asset_manager import AssetManager
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
-    ANIMATION_DELAY = 30
+    ANIMATION_DELAY = 40
 
     def __init__(self, x, y, width, height):
         super().__init__()
