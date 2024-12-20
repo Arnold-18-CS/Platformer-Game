@@ -1,7 +1,6 @@
 import pygame
 from modules.constants import *
 
-
 pygame.init()
 pygame.display.set_caption(GAME_NAME)
 
@@ -14,6 +13,7 @@ from modules.utils import get_background
 from modules.collision import handle_move, check_congratulation_collision
 
 def draw(window, background, bg_image, player, objects, offset_x):
+    """Draws the game elements on the window"""
     for tile in background:
         window.blit(bg_image, tile)
 
@@ -24,33 +24,31 @@ def draw(window, background, bg_image, player, objects, offset_x):
 
     pygame.display.update()
   
-  #Initialize the game  
 def main(window):
+    """Main game function"""
     clock = pygame.time.Clock()
     FPS = 60
 
-    restart_game = True  # Add restart flag
-    while restart_game:
-        restart_game = False  # Reset the flag for the current session
+    game_should_restart = True  # Add restart flag
+    while game_should_restart:
+        game_should_restart = False  # Reset the flag for the current session
 
         # --- Initialize the game state ---
         background, bg_image = get_background("Blue.png")
-        block_size = 96
         player = Player(100, 100, 50, 50)
-        fire = Fire(100, HEIGHT - block_size - 64, 16, 32)
+        fire = Fire(100, HEIGHT - BLOCK_SIZE - 64, 16, 32)
         fire.on()
-        objects = create_random_terrain(block_size, WIDTH, HEIGHT)
+        objects = create_random_terrain(BLOCK_SIZE, WIDTH, HEIGHT)
         objects.append(fire)
 
         try:
-            target_block = create_random_target_block(block_size, WIDTH, HEIGHT, player.rect.topleft, objects)
+            target_block = create_random_target_block(BLOCK_SIZE, WIDTH, HEIGHT, player.rect.topleft, objects)
             objects.append(target_block)
         except ValueError as e:
             print(f"Error creating target block: {e}")
             target_block = None
 
         offset_x = 0
-        scroll_area_width = 200
         run = True
 
         # --- Main Game Loop ---
@@ -68,7 +66,7 @@ def main(window):
             # Check for winning condition
             if target_block and check_congratulation_collision(player, target_block):
                 display_congratulations(window)
-                restart_game = True
+                game_should_restart = True
                 run = False  # Exit the current game loop
 
             # Camera scrolling
@@ -83,6 +81,7 @@ def main(window):
 
 # Event handling
 def handle_events(player):
+    """Handles user inputs and events"""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return False
@@ -93,21 +92,16 @@ def handle_events(player):
 
 
 # Handle camera scrolling
-def handle_scrolling(player):
-    # if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or \
-    #    ((player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
-    #     offset_x += player.x_vel
-        
+def handle_scrolling(player): 
     """
     Calculate offset to center the camera on the player.
     """
     offset_x = player.rect.centerx - WIDTH // 2
     return offset_x
 
-
 # Draw all game elements
 def draw_frame(window, background, bg_image, player, objects, offset_x):
-    """Draw all game elements"""
+    """Draw all game elements on the frame"""
     window.fill((0, 0, 0))  # Clear the screen
     draw(window, background, bg_image, player, objects, offset_x)  # Player is drawn here
     pygame.display.update()

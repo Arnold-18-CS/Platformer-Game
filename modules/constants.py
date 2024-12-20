@@ -3,7 +3,10 @@ GAME_NAME = "Block Finder"
 WIDTH = 1000
 HEIGHT = 800
 FPS = 60
-scroll_area_width = 200
+BLACK = (0, 0, 0)  # Background color
+BLOCK_SIZE = 96  # Default block size
+SCROLL_AREA_WIDTH = 200  # Scroll area width
+FONT_SIZE = 50  # Font size for congratulatory message
 
 # Constants for Player
 GRAVITY = 1
