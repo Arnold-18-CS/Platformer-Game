@@ -11,6 +11,7 @@ from modules.fire import Fire
 from modules.terrain import create_random_terrain, create_random_target_block
 from modules.utils import get_background
 from modules.collision import handle_move, check_congratulation_collision
+from modules.asset_manager import AssetManager
 
 def draw(window, background, bg_image, player, objects, offset_x):
     """Draws the game elements on the window"""
@@ -88,6 +89,8 @@ def handle_events(player):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and player.jump_count < 2:
                 player.jump()
+            if event.key == pygame.K_p: # Pause the game
+                pause_game()
     return True
 
 
@@ -105,11 +108,34 @@ def draw_frame(window, background, bg_image, player, objects, offset_x):
     window.fill((0, 0, 0))  # Clear the screen
     draw(window, background, bg_image, player, objects, offset_x)  # Player is drawn here
     pygame.display.update()
+    
+def pause_game():
+    """Pauses the game until 'p' is pressed again"""
+    paused = True
+    font = pygame.font.SysFont(FONT, FONT_SIZE)
+    text = font.render("Game Paused - Press 'p' to resume", True, WHITE)
+    play_button = AssetManager.load_image("assets/Menu/Buttons/Play.png")
+    play_button = pygame.transform.scale(play_button, DEFAULT_ICON_SIZE)
+    play_button_rect = play_button.get_rect(center=(WIDTH//2, HEIGHT//2 + 100))
+    while paused:
+        window.blit(
+            text,
+            (WIDTH//2 - text.get_width()//2,
+            HEIGHT//2 - text.get_height()//2
+            )
+        )
+        window.blit(play_button, play_button_rect)
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                paused = False
+            
   
 def display_congratulations(window):
     """Show the congratulatory message and reload the game after 3 seconds"""
-    font = pygame.font.SysFont('Serif', 50)
-    text = font.render("Congratulations! You've won!", True, (255, 255, 255))
+    font = pygame.font.SysFont(FONT, 50)
+    text = font.render("Congratulations! You've won!", True, WHITE)
     window.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
     pygame.display.flip()
 
