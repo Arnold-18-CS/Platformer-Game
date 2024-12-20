@@ -23,62 +23,61 @@ def draw(window, background, bg_image, player, objects, offset_x):
     player.draw(window, offset_x)
 
     pygame.display.update()
-    
-# Initialize the game
+  
+  #Initialize the game  
 def main(window):
     clock = pygame.time.Clock()
     FPS = 60
 
-    # Load background
-    background, bg_image = get_background("Blue.png")
-    block_size = 96
+    restart_game = True  # Add restart flag
+    while restart_game:
+        restart_game = False  # Reset the flag for the current session
 
-    # Create player object
-    player = Player(100, 100, 50, 50)
+        # --- Initialize the game state ---
+        background, bg_image = get_background("Blue.png")
+        block_size = 96
+        player = Player(100, 100, 50, 50)
+        fire = Fire(100, HEIGHT - block_size - 64, 16, 32)
+        fire.on()
+        objects = create_random_terrain(block_size, WIDTH, HEIGHT)
+        objects.append(fire)
 
-    # Create the fire object
-    fire = Fire(100, HEIGHT - block_size - 64, 16, 32)
-    fire.on()
+        try:
+            target_block = create_random_target_block(block_size, WIDTH, HEIGHT, player.rect.topleft, objects)
+            objects.append(target_block)
+        except ValueError as e:
+            print(f"Error creating target block: {e}")
+            target_block = None
 
-    # Create terrain
-    objects = create_random_terrain(block_size, WIDTH, HEIGHT)
-    objects.append(fire)
+        offset_x = 0
+        scroll_area_width = 200
+        run = True
 
-    # Create target block safely
-    target_block = None
-    try:
-        target_block = create_random_target_block(block_size, WIDTH, HEIGHT, player.rect.topleft, objects)
-        objects.append(target_block)
-    except ValueError as e:
-        print(f"Error creating target block: {e}")
+        # --- Main Game Loop ---
+        while run:
+            clock.tick(FPS)
 
-    offset_x = 0
-    scroll_area_width = 200
+            # Event handling
+            run = handle_events(player)
 
-    # Main loop
-    run = True
-    while run:
-        clock.tick(FPS)  # Cap the frame rate
+            # Update logic
+            player.loop(FPS)
+            fire.loop()
+            handle_move(player, objects)
 
-        # --- Event Handling ---
-        run = handle_events(player)
+            # Check for winning condition
+            if target_block and check_congratulation_collision(player, target_block):
+                display_congratulations(window)
+                restart_game = True
+                run = False  # Exit the current game loop
 
-        # --- Update Logic ---
-        player.loop(FPS)
-        fire.loop()
-        handle_move(player, objects)
+            # Camera scrolling
+            offset_x = handle_scrolling(player)
 
-        # Check for target block collision
-        if target_block and check_congratulation_collision(player, target_block):
-            display_congratulations(window)
+            # Drawing
+            draw_frame(window, background, bg_image, player, objects, offset_x)
 
-        # --- Camera Logic ---
-        offset_x = handle_scrolling(player)
-
-        # --- Draw Everything ---
-        draw_frame(window, background, bg_image, player, objects, offset_x)
-
-    # Clean up
+    # Quit the game
     pygame.quit()
 
 
@@ -121,12 +120,6 @@ def display_congratulations(window):
     pygame.display.flip()
 
     pygame.time.wait(3000)  # Wait for 3 seconds
-    reload_game()  # Reload the game or restart the level
-
-def reload_game():
-    """Function to reload or restart the game"""
-    # You can either reset the level or restart the entire game by reinitializing the main function
-    main(window)
 
 if __name__ == "__main__":
     window = pygame.display.set_mode((WIDTH, HEIGHT))
