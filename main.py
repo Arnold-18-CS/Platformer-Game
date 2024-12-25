@@ -1,34 +1,37 @@
 import pygame
-from modules.constants import *
+
+from modules.asset_manager import AssetManager
+from modules.collision import check_congratulation_collision, handle_move
+from modules.constants import (BLOCK_SIZE, DEFAULT_ICON_SIZE, FONT, FONT_SIZE,
+                               GAME_NAME, HEIGHT, WHITE, WIDTH)
+from modules.fire import Fire
+from modules.player import Player
+from modules.terrain import create_random_target_block, create_random_terrain
+from modules.utils import get_background
 
 pygame.init()
 pygame.display.set_caption(GAME_NAME)
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
-from modules.player import Player
-from modules.fire import Fire
-from modules.terrain import create_random_terrain, create_random_target_block
-from modules.utils import get_background
-from modules.collision import handle_move, check_congratulation_collision
-from modules.asset_manager import AssetManager
 
-def draw(window, background, bg_image, player, objects, offset_x):
+def draw(win, background, bg_image, player, objects, offset_x):
     """Draws the game elements on the window"""
     for tile in background:
-        window.blit(bg_image, tile)
+        win.blit(bg_image, tile)
 
     for obj in objects:
-        obj.draw(window, offset_x)
+        obj.draw(win, offset_x)
 
-    player.draw(window, offset_x)
+    player.draw(win, offset_x)
 
     pygame.display.update()
-  
-def main(window):
+
+
+def main(win):
     """Main game function"""
     clock = pygame.time.Clock()
-    FPS = 60
+    fps = 60
 
     game_should_restart = True  # Add restart flag
     while game_should_restart:
@@ -43,7 +46,9 @@ def main(window):
         objects.append(fire)
 
         try:
-            target_block = create_random_target_block(BLOCK_SIZE, WIDTH, HEIGHT, player.rect.topleft, objects)
+            target_block = create_random_target_block(
+                BLOCK_SIZE, WIDTH, HEIGHT, player.rect.topleft, objects
+            )
             objects.append(target_block)
         except ValueError as e:
             print(f"Error creating target block: {e}")
@@ -54,19 +59,19 @@ def main(window):
 
         # --- Main Game Loop ---
         while run:
-            clock.tick(FPS)
+            clock.tick(fps)
 
             # Event handling
             run = handle_events(player)
 
             # Update logic
-            player.loop(FPS)
+            player.loop(fps)
             fire.loop()
             handle_move(player, objects)
 
             # Check for winning condition
             if target_block and check_congratulation_collision(player, target_block):
-                display_congratulations(window)
+                display_congratulations(win)
                 game_should_restart = True
                 run = False  # Exit the current game loop
 
@@ -74,7 +79,8 @@ def main(window):
             offset_x = handle_scrolling(player)
 
             # Drawing
-            draw_frame(window, background, bg_image, player, objects, offset_x)
+            win.fill((0, 0, 0))
+            draw(win, background, bg_image, player, objects, offset_x)
 
     # Quit the game
     pygame.quit()
@@ -89,26 +95,20 @@ def handle_events(player):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and player.jump_count < 2:
                 player.jump()
-            if event.key == pygame.K_p: # Pause the game
+            if event.key == pygame.K_p:  # Pause the game
                 pause_game()
     return True
 
 
 # Handle camera scrolling
-def handle_scrolling(player): 
+def handle_scrolling(player):
     """
     Calculate offset to center the camera on the player.
     """
     offset_x = player.rect.centerx - WIDTH // 2
     return offset_x
 
-# Draw all game elements
-def draw_frame(window, background, bg_image, player, objects, offset_x):
-    """Draw all game elements on the frame"""
-    window.fill((0, 0, 0))  # Clear the screen
-    draw(window, background, bg_image, player, objects, offset_x)  # Player is drawn here
-    pygame.display.update()
-    
+
 def pause_game():
     """Pauses the game until 'p' is pressed again"""
     paused = True
@@ -116,31 +116,31 @@ def pause_game():
     text = font.render("Game Paused - Press 'p' to resume", True, WHITE)
     play_button = AssetManager.load_image("assets/Menu/Buttons/Play.png")
     play_button = pygame.transform.scale(play_button, DEFAULT_ICON_SIZE)
-    play_button_rect = play_button.get_rect(center=(WIDTH//2, HEIGHT//2 + 100))
+    play_button_rect = play_button.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
     while paused:
         window.blit(
             text,
-            (WIDTH//2 - text.get_width()//2,
-            HEIGHT//2 - text.get_height()//2
-            )
+            (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2),
         )
         window.blit(play_button, play_button_rect)
         pygame.display.flip()
-        
+
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 paused = False
-            
-  
-def display_congratulations(window):
+
+
+def display_congratulations(win):
     """Show the congratulatory message and reload the game after 3 seconds"""
     font = pygame.font.SysFont(FONT, 50)
     text = font.render("Congratulations! You've won!", True, WHITE)
-    window.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+    win.blit(
+        text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2)
+    )
     pygame.display.flip()
 
     pygame.time.wait(3000)  # Wait for 3 seconds
 
+
 if __name__ == "__main__":
-    window = pygame.display.set_mode((WIDTH, HEIGHT))
     main(window)
