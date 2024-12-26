@@ -15,7 +15,7 @@ pygame.init()
 pygame.display.set_caption(GAME_NAME)
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
-bgd = pygame.image.load("dark_forest2.jpg")
+bgd = pygame.image.load("Background.png")
 bgd = pygame.transform.scale(bgd, (WIDTH, HEIGHT))
 
 

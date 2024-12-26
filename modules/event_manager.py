@@ -28,6 +28,8 @@ class EventManager:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.quit = True
+            elif event.type == pygame.VIDEORESIZE:
+                print("Window resizing is disabled.")
             elif event.type == pygame.KEYDOWN and event.key in self.key_down_actions:
                 self.key_down_actions[event.key]()
             elif event.type == pygame.KEYUP and event.key in self.key_up_actions:
