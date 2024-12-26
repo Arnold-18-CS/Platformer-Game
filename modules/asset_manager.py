@@ -55,12 +55,13 @@ class AssetManager:
         """
         Preload a list of assets into the cache.
         :param assets: A list of tuples in the format (type, args), where type is
-                       'image', 'sound', or 'sprites', and args are the arguments for the respective load method.
+                       'image', 'sound', or 'sprites',
+                        and args are the arguments for the respective load method.
         """
         for asset_type, args in assets:
-            if asset_type == 'image':
+            if asset_type == "image":
                 cls.load_image(*args)
-            elif asset_type == 'sound':
+            elif asset_type == "sound":
                 cls.load_sound(*args)
-            elif asset_type == 'sprites':
+            elif asset_type == "sprites":
                 cls.load_sprites(*args)

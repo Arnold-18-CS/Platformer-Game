@@ -1,6 +1,7 @@
 import pygame
-from modules.constants import JUMP_VEL, GRAVITY
+
 from modules.asset_manager import AssetManager
+from modules.constants import GRAVITY, JUMP_VEL
 
 
 class Player(pygame.sprite.Sprite):
@@ -10,7 +11,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
-        self.SPRITES = AssetManager.load_sprites("MainCharacters", "MaskDude",32,32,True)
+        self.SPRITES = AssetManager.load_sprites(
+            "MainCharacters", "MaskDude", 32, 32, True
+        )
         self.sprite = self.SPRITES["idle_left"][0]  # Default sprite
         self.x_vel = 0
         self.y_vel = 0
@@ -50,16 +53,16 @@ class Player(pygame.sprite.Sprite):
         if self.direction != "right":
             self.direction = "right"
             self.animation_count = 0
-            
+
     def apply_gravity(self, fps):
         """Applies gravity to the player."""
         self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
         self.fall_count += 1  # Tracks how long the player has been falling
-        
+
     def handle_movement(self):
         """Updates the player's position based on velocities."""
         self.move(self.x_vel, self.y_vel)
-        
+
     def handle_hits(self, fps):
         """Handles hit logic and resets the hit status after a certain duration."""
         if self.hit:
@@ -67,7 +70,7 @@ class Player(pygame.sprite.Sprite):
         if self.hit_count > fps * 2:  # Hit lasts for 2 seconds
             self.hit = False
             self.hit_count = 0
-            
+
     def update_sprite(self):
         """Updates the sprite based on player state and time."""
         # Define the animation state dictionary
@@ -75,15 +78,18 @@ class Player(pygame.sprite.Sprite):
             "hit": "hit",
             "jump": "jump" if self.jump_count == 1 else "double_jump",
             "fall": "fall" if self.y_vel > self.GRAVITY * 2 else "idle",
-            "run": "run" if self.x_vel != 0 else "idle"
+            "run": "run" if self.x_vel != 0 else "idle",
         }
 
         # Determine the sprite sheet based on player state
         sprite_sheet = animation_state.get(
-            "hit" if self.hit else 
-            "jump" if self.y_vel < 0 else 
-            "fall" if self.y_vel > self.GRAVITY * 2 else
-            "run"
+            "hit"
+            if self.hit
+            else (
+                "jump"
+                if self.y_vel < 0
+                else "fall" if self.y_vel > self.GRAVITY * 2 else "run"
+            )
         )
 
         sprite_sheet_name = f"{sprite_sheet}_{self.direction}"
@@ -102,7 +108,7 @@ class Player(pygame.sprite.Sprite):
 
         # Update rect and mask to reflect new sprite size/position
         self.update()
-            
+
     def loop(self, fps):
         """Main loop to update player state."""
         self.apply_gravity(fps)
@@ -125,4 +131,3 @@ class Player(pygame.sprite.Sprite):
 
     def draw(self, win, offset_x):
         win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y))
-

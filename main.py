@@ -8,18 +8,22 @@ from modules.event_manager import EventManager
 from modules.fire import Fire
 from modules.player import Player
 from modules.terrain import create_random_target_block, create_random_terrain
-from modules.utils import get_background
+
+# from modules.utils import get_background
 
 pygame.init()
 pygame.display.set_caption(GAME_NAME)
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
+bgd = pygame.image.load("dark_forest2.jpg")
+bgd = pygame.transform.scale(bgd, (WIDTH, HEIGHT))
 
 
-def draw(win, background, bg_image, player, objects, offset_x):
+def draw(win, bg_image, player, objects, offset_x):
     """Draws the game elements on the window"""
-    for tile in background:
-        win.blit(bg_image, tile)
+    # for tile in background:
+    #    win.blit(bg_image, tile)
+    win.blit(bg_image, (0, 0))
 
     for obj in objects:
         obj.draw(win, offset_x)
@@ -39,7 +43,7 @@ def main(win):
         game_should_restart = False  # Reset the flag for the current session
 
         # --- Initialize the game state ---
-        background, bg_image = get_background("Blue.png")
+        # background, bg_image = get_background("Blue.png")
         player = Player(100, 100, 50, 50)
         fire = Fire(100, HEIGHT - BLOCK_SIZE - 64, 16, 32)
         fire.on()
@@ -93,7 +97,7 @@ def main(win):
 
             # Drawing
             win.fill((0, 0, 0))
-            draw(win, background, bg_image, player, objects, offset_x)
+            draw(win, bgd, player, objects, offset_x)
 
     # Quit the game
     pygame.quit()
