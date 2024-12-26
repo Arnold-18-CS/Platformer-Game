@@ -4,6 +4,7 @@ from modules.asset_manager import AssetManager
 from modules.collision import check_congratulation_collision, handle_move
 from modules.constants import (BLOCK_SIZE, DEFAULT_ICON_SIZE, FONT, FONT_SIZE,
                                GAME_NAME, HEIGHT, WHITE, WIDTH)
+from modules.event_manager import EventManager
 from modules.fire import Fire
 from modules.player import Player
 from modules.terrain import create_random_target_block, create_random_terrain
@@ -57,12 +58,24 @@ def main(win):
         offset_x = 0
         run = True
 
+        event_manager = EventManager()
+        event_manager.register_key_action(
+            pygame.K_SPACE,
+            lambda: player.jump() if player.jump_count < 2 else None,
+            pygame.KEYDOWN,
+        )
+        event_manager.register_key_action(pygame.K_p, pause_game, pygame.KEYDOWN)
+
         # --- Main Game Loop ---
         while run:
             clock.tick(fps)
 
             # Event handling
-            run = handle_events(player)
+            event_manager.process_event()
+            if event_manager.is_quit():
+                run = False
+
+            # run = handle_events(player)
 
             # Update logic
             player.loop(fps)
@@ -84,20 +97,6 @@ def main(win):
 
     # Quit the game
     pygame.quit()
-
-
-# Event handling
-def handle_events(player):
-    """Handles user inputs and events"""
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and player.jump_count < 2:
-                player.jump()
-            if event.key == pygame.K_p:  # Pause the game
-                pause_game()
-    return True
 
 
 # Handle camera scrolling
